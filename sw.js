@@ -1,13 +1,26 @@
-const CACHE_VERSION = 1
-const CACHE = {
-    OFFLINE: 'offline-cache-' + CACHE_VERSION,
-}
-const OFFLINE_URL = 'offline.html'
+const cacheName = 'hello-pwa';
+const filesToCache = [
+    '/',
+    '/index.html',
+    '/css/style.css',
+    '/js/main.js'
+];
 
-self.addEventListener('install', function(event) {
-    event.waitUntil(
-        caches.open(CACHE.OFFLINE).then(function(cache) {
-            return cache.add(OFFLINE_URL)
+/* Start the service worker and cache all of the app's content */
+self.addEventListener('install', function(e) {
+    e.waitUntil(
+        caches.open(cacheName).then(function(cache) {
+            return cache.addAll(filesToCache);
         })
-    )
-})
+    );
+    self.skipWaiting();
+});
+
+/* Serve cached content when offline */
+self.addEventListener('fetch', function(e) {
+    e.respondWith(
+        caches.match(e.request).then(function(response) {
+            return response || fetch(e.request);
+        })
+    );
+});
